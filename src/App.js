@@ -1,10 +1,11 @@
-import './App.css';
+import React from "react";
+import { AuthorAllPosts } from "./app/pages/AuthorAllPosts";
 
 function App() {
   return (
-    <div className="App">
-      
-    </div>
+    <main className="App">
+      <AuthorAllPosts />
+    </main>
   );
 }
 
