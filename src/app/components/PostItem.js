@@ -6,8 +6,7 @@ import { useSelector } from "react-redux";
 import { selectActiveUser, selectAllUsers } from "../features/userSlice";
 import { useDispatch } from "react-redux";
 import { postLikeUpdate, togglePostLike } from "../features/postsSlice";
-import { ModalCustom } from "./ModalCustom";
-import { PostButtons } from "./PostButtons";
+import { ReviewPost } from "./ReviewPost";
 
 export const PostItem = ({ post }) => {
   const dispatch = useDispatch();
@@ -22,10 +21,11 @@ export const PostItem = ({ post }) => {
   const onClickBack = () => {
     setModalVisible(false);
   };
+  let postText =
+    post.text.length < 100 ? post.text : `${post.text.slice(0, 100)}...`;
 
   const postElement = (
     <article
-      onClick={setModalVisible}
       style={{
         display: "flex",
         flexDirection: "column",
@@ -33,7 +33,7 @@ export const PostItem = ({ post }) => {
         cursor: "pointer",
       }}
     >
-      <div>
+      <div onClick={setModalVisible}>
         <img
           className="postImage"
           src={post.image}
@@ -41,9 +41,7 @@ export const PostItem = ({ post }) => {
           height="100"
           alt="post content"
         />
-        <p style={{ wordWrap: "break-word" }}>
-          {post.text.length < 100 ? post.text : `${post.text.slice(0, 100)}...`}
-        </p>
+        <p style={{ wordWrap: "break-word" }}>{postText}</p>
       </div>
       <div style={{ display: "flex", justifyContent: "space-between" }}>
         <div>
@@ -60,13 +58,17 @@ export const PostItem = ({ post }) => {
       </div>
     </article>
   );
-  let content = modalVisible ? (
-    <ModalCustom visible={modalVisible}>
+
+  return (
+    <>
       {postElement}
-      <PostButtons onClickBack={onClickBack} />
-    </ModalCustom>
-  ) : (
-    postElement
+      {modalVisible && (
+        <ReviewPost
+          visible={modalVisible}
+          onClickBack={onClickBack}
+          post={post}
+        />
+      )}
+    </>
   );
-  return content;
 };

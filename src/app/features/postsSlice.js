@@ -6,8 +6,14 @@ import {
   doc,
   getDocs,
   updateDoc,
+  deleteDoc,
 } from "firebase/firestore";
-import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
+import {
+  ref,
+  uploadBytesResumable,
+  getDownloadURL,
+  deleteObject,
+} from "firebase/storage";
 
 const initialState = {
   posts: [],
@@ -87,6 +93,68 @@ export const postLikeUpdate = createAsyncThunk(
     }
   }
 );
+export const deletePost = createAsyncThunk(
+  "posts/postsSlice",
+  async (data, { rejectWithValue, dispatch }) => {
+    console.log(data);
+    const { postId, imageUrl } = data;
+    const postRef = doc(db, "posts", postId);
+    const storageRef = ref(storage, imageUrl);
+    try {
+      deleteObject(storageRef)
+        .then(() => {
+          deleteDoc(postRef);
+        })
+        .then(() => {
+          dispatch(getPosts());
+        })
+        .catch((error) => {
+          console.log(error.message);
+        });
+    } catch (err) {
+      console.log(err);
+      return rejectWithValue(err.message);
+    }
+  }
+);
+export const postEdit = createAsyncThunk(
+  "posts/postsSlice",
+  async (data, { rejectWithValue, dispatch }) => {
+    const { text, image, postId } = data;
+    try {
+      const id = nanoid();
+
+      //save selected image to firestore storage and get image URL
+      const storageRef = ref(storage, `/images/${id}`);
+      const uploadTask = uploadBytesResumable(storageRef, image);
+      await uploadTask.on(
+        "start storage",
+        null,
+        (error) => {
+          alert(error);
+        },
+        () => {
+          //then get image url create post and send to firestore > download posts with new post
+          getDownloadURL(uploadTask.snapshot.ref)
+            .then((url) => {
+              const postRef = doc(db, "posts", postId);
+              updateDoc(postRef, {
+                image: url,
+                text,
+              });
+            })
+            .then(() => {
+              dispatch(getPosts());
+              const storageRef = ref(storage, image);
+              deleteObject(storageRef);
+            });
+        }
+      );
+    } catch (err) {
+      return rejectWithValue(err.message);
+    }
+  }
+);
 
 const postsSlice = createSlice({
   name: "posts",
@@ -95,7 +163,6 @@ const postsSlice = createSlice({
     setAllPosts(state, action) {
       state.posts = action.payload;
     },
-
     togglePostLike(state, action) {
       const { userId, postId } = action.payload;
       const likedPost = state.posts.find((post) => post.id === postId);
@@ -129,7 +196,7 @@ const postsSlice = createSlice({
     },
   },
 });
-
+export const selectModalVisible = (state) => state.posts.postModalVisible;
 export const selectAllPosts = (state) => state.posts.posts;
 
 export const { setAllPosts, togglePostLike } = postsSlice.actions;
