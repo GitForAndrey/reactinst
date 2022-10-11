@@ -2,13 +2,14 @@ import React, { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { addPost } from "../features/postsSlice";
 import { selectActiveUser } from "../features/userSlice";
+import { ModalCustom } from "./ModalCustom";
 
 export const PostForm = () => {
   const dispatch = useDispatch();
   const activeUser = useSelector(selectActiveUser);
 
   const [text, setText] = useState("");
-  const [formVisible, setFormVisible] = useState(false);
+  const [modalVisible, setModalVisible] = useState(false);
   const [image, setImage] = useState([]);
 
   const onSetImage = (e) => {
@@ -17,26 +18,25 @@ export const PostForm = () => {
   };
 
   const onTextChange = (e) => setText(e.target.value);
-  const onVisibleChange = () => setFormVisible(!formVisible);
+  const onModalChange = () => setModalVisible(!modalVisible);
+
   const onAddPost = () => {
     if (image && text) {
       dispatch(addPost({ image, text, activeUser: activeUser.id }));
       setText("");
-      setFormVisible(false);
+      setModalVisible(false);
     }
   };
   const addButton = (
-    <button className="addButton" onClick={onVisibleChange}>
+    <button className="addButton" onClick={onModalChange}>
       Додати пост
     </button>
   );
   const postForm = (
-    <>
+    <ModalCustom visible={modalVisible}>
       <form>
         <label htmlFor="postTitle"> Оберіть фото:</label>
-        {image.length ? (
-          <img className="postFormImage" src={image} alt="upload preview" />
-        ) : null}
+
         <input type="file" accept="image/*" onChange={onSetImage} />
         <label htmlFor="postText">Текст посту:</label>
         <textarea
@@ -49,10 +49,10 @@ export const PostForm = () => {
           Додати пост
         </button>
       </form>
-      <button className="addButton" onClick={onVisibleChange}>
+      <button className="addButton" onClick={onModalChange}>
         Відміна
       </button>
-    </>
+    </ModalCustom>
   );
-  return <section>{formVisible ? postForm : addButton}</section>;
+  return <section>{modalVisible ? postForm : addButton}</section>;
 };

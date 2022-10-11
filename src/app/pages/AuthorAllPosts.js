@@ -2,7 +2,7 @@ import React from "react";
 import { useSelector } from "react-redux";
 import { PostForm } from "../components/PostForm";
 import { PostItem } from "../components/PostItem";
-import { selectAllPosts } from "../features/posts/postsSlice";
+import { selectAllPosts } from "../features/postsSlice";
 
 export const AuthorAllPosts = () => {
   const posts = useSelector(selectAllPosts);

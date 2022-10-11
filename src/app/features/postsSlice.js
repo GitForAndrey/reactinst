@@ -1,5 +1,5 @@
 import { createAsyncThunk, createSlice, nanoid } from "@reduxjs/toolkit";
-import { db, storage } from "../../firebase";
+import { db, storage } from "../firebase";
 import {
   collection,
   addDoc,
@@ -73,13 +73,13 @@ export const addPost = createAsyncThunk(
 );
 export const postLikeUpdate = createAsyncThunk(
   "posts/postsSlice",
-  async (data, { dispatch, rejectWithValue, getState }) => {
+  async (data, { rejectWithValue, getState }) => {
     const { postId } = data;
     const likedPost = getState().posts.posts.find((post) => post.id === postId);
 
     try {
-      const washingtonRef = doc(db, "posts", likedPost.id);
-      await updateDoc(washingtonRef, {
+      const postRef = doc(db, "posts", likedPost.id);
+      await updateDoc(postRef, {
         likes: likedPost.likes,
       });
     } catch (err) {
@@ -120,6 +120,10 @@ const postsSlice = createSlice({
       state.error = action.payload;
     },
     [addPost.rejected]: (state, action) => {
+      state.status = "rejected";
+      state.error = action.payload;
+    },
+    [postLikeUpdate.rejected]: (state, action) => {
       state.status = "rejected";
       state.error = action.payload;
     },

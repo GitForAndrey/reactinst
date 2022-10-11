@@ -3,7 +3,7 @@ import { createSlice } from "@reduxjs/toolkit";
 const initialState = {
   activeUser: { id: "sdJH879dfJKJ", userName: "Andrii Petrov" },
   allUsers: [
-    { id: "sdJH879dfJKJ", userName: "Andrii Petrov" },
+    { id: "sdJH879dfJKJ", userName: "Andrii" },
     { id: "sdJ56743KJ", userName: "Slava" },
     { id: "sdJfg77dfg3KJ", userName: "Ivan Sergeev" },
     { id: "23fdf6743KJ", userName: "Tatjana Rov" },
