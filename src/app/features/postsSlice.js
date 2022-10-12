@@ -14,6 +14,7 @@ import {
   getDownloadURL,
   deleteObject,
 } from "firebase/storage";
+import { toast } from "react-toastify";
 
 const initialState = {
   posts: [],
@@ -28,7 +29,7 @@ export const getPosts = createAsyncThunk(
     try {
       const postRef = collection(db, "posts");
       const postSnap = await getDocs(postRef);
-      postSnap.forEach((doc) => {
+      await postSnap.forEach((doc) => {
         data.push({
           id: doc.id,
           ...doc.data(),
@@ -43,33 +44,30 @@ export const getPosts = createAsyncThunk(
 export const addPost = createAsyncThunk(
   "posts/postsSlice",
   async (data, { dispatch, rejectWithValue }) => {
+    const { image, text, activeUser } = data;
     try {
       const id = nanoid();
 
       //save selected image to firestore storage and get image URL
       const storageRef = ref(storage, `/images/${id}`);
-      const uploadTask = uploadBytesResumable(storageRef, data.image);
-      await uploadTask.on(
+      const uploadTask = uploadBytesResumable(storageRef, image);
+      uploadTask.on(
         "start storage",
         null,
-        (error) => {
-          alert(error);
+        (err) => {
+          return rejectWithValue(err.message);
         },
-        () => {
+        async () => {
           //then get image url create post and send to firestore > download posts with new post
-          getDownloadURL(uploadTask.snapshot.ref)
-            .then((url) => {
-              addDoc(collection(db, "posts"), {
-                image: url,
-                text: data.text,
-                userId: data.activeUser,
-                date: new Date().toISOString(),
-                likes: [],
-              });
-            })
-            .then(() => {
-              dispatch(getPosts());
-            });
+          let url = await getDownloadURL(uploadTask.snapshot.ref);
+          await addDoc(collection(db, "posts"), {
+            image: url,
+            text: text,
+            userId: activeUser,
+            date: new Date().toISOString(),
+            likes: [],
+          });
+          await dispatch(getPosts());
         }
       );
     } catch (err) {
@@ -85,7 +83,7 @@ export const postLikeUpdate = createAsyncThunk(
 
     try {
       const postRef = doc(db, "posts", likedPost.id);
-      await updateDoc(postRef, {
+      updateDoc(postRef, {
         likes: likedPost.likes,
       });
     } catch (err) {
@@ -96,23 +94,14 @@ export const postLikeUpdate = createAsyncThunk(
 export const deletePost = createAsyncThunk(
   "posts/postsSlice",
   async (data, { rejectWithValue, dispatch }) => {
-    console.log(data);
     const { postId, imageUrl } = data;
     const postRef = doc(db, "posts", postId);
     const storageRef = ref(storage, imageUrl);
     try {
-      deleteObject(storageRef)
-        .then(() => {
-          deleteDoc(postRef);
-        })
-        .then(() => {
-          dispatch(getPosts());
-        })
-        .catch((error) => {
-          console.log(error.message);
-        });
+      await deleteObject(storageRef);
+      await deleteDoc(postRef);
+      await dispatch(getPosts());
     } catch (err) {
-      console.log(err);
       return rejectWithValue(err.message);
     }
   }
@@ -120,38 +109,47 @@ export const deletePost = createAsyncThunk(
 export const postEdit = createAsyncThunk(
   "posts/postsSlice",
   async (data, { rejectWithValue, dispatch }) => {
-    const { text, image, postId } = data;
-    try {
-      const id = nanoid();
+    const { text, image, postId, oldImage } = data;
 
-      //save selected image to firestore storage and get image URL
-      const storageRef = ref(storage, `/images/${id}`);
-      const uploadTask = uploadBytesResumable(storageRef, image);
-      await uploadTask.on(
-        "start storage",
-        null,
-        (error) => {
-          alert(error);
-        },
-        () => {
-          //then get image url create post and send to firestore > download posts with new post
-          getDownloadURL(uploadTask.snapshot.ref)
-            .then((url) => {
-              const postRef = doc(db, "posts", postId);
-              updateDoc(postRef, {
-                image: url,
-                text,
-              });
-            })
-            .then(() => {
-              dispatch(getPosts());
-              const storageRef = ref(storage, image);
-              deleteObject(storageRef);
+    if (image == oldImage) {
+      console.log("same photo");
+      try {
+        const postRef = await doc(db, "posts", postId);
+        await updateDoc(postRef, {
+          text,
+        });
+        await dispatch(getPosts());
+      } catch (err) {
+        return rejectWithValue(err.message);
+      }
+    } else {
+      try {
+        const id = nanoid();
+        const storageRef = ref(storage, `/images/${id}`);
+        const uploadTask = uploadBytesResumable(storageRef, image);
+        const storageRefDel = ref(storage, oldImage);
+
+        uploadTask.on(
+          "start storage",
+          null,
+          (err) => {
+            return rejectWithValue(err.message);
+          },
+          async () => {
+            //then get image url create post and send to firestore > download posts with new post
+            let url = await getDownloadURL(uploadTask.snapshot.ref);
+            const postRef = doc(db, "posts", postId);
+            await updateDoc(postRef, {
+              image: url,
+              text,
             });
-        }
-      );
-    } catch (err) {
-      return rejectWithValue(err.message);
+            await dispatch(getPosts());
+            await deleteObject(storageRefDel);
+          }
+        );
+      } catch (err) {
+        return rejectWithValue(err.message);
+      }
     }
   }
 );
@@ -185,19 +183,34 @@ const postsSlice = createSlice({
     [getPosts.rejected]: (state, action) => {
       state.status = "rejected";
       state.error = action.payload;
+      toast.error(action.payload);
     },
     [addPost.rejected]: (state, action) => {
       state.status = "rejected";
       state.error = action.payload;
+      toast.error(action.payload);
     },
     [postLikeUpdate.rejected]: (state, action) => {
       state.status = "rejected";
       state.error = action.payload;
+      toast.error(action.payload);
+    },
+    [deletePost.rejected]: (state, action) => {
+      state.status = "rejected";
+      state.error = action.payload;
+      toast.error(action.payload);
+    },
+    [postEdit.rejected]: (state, action) => {
+      state.status = "rejected";
+      state.error = action.payload;
+      toast.error(action.payload);
     },
   },
 });
+
 export const selectModalVisible = (state) => state.posts.postModalVisible;
 export const selectAllPosts = (state) => state.posts.posts;
+export const selectError = (state) => state.posts.error;
 
 export const { setAllPosts, togglePostLike } = postsSlice.actions;
 export default postsSlice.reducer;

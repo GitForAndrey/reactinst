@@ -10,14 +10,22 @@ export const ReviewPost = ({ post, visible, onClickBack }) => {
   const activeUser = useSelector(selectActiveUser);
 
   const [text, setText] = useState(post.text);
-  const [image, setImage] = useState([]);
+  const [image, setImage] = useState();
   const [edit, setEdit] = useState(false);
 
   const onClickEdit = () => {
     setEdit(!edit);
   };
   const onEditPost = () => {
-    dispatch(postEdit({ text, image, postId: post.id }));
+    let imageEdit = image ? image : post.image;
+    dispatch(
+      postEdit({
+        text,
+        image: imageEdit,
+        postId: post.id,
+        oldImage: post.image,
+      })
+    );
     onClickBack();
   };
 
