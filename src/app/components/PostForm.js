@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { addPost } from "../features/postsSlice";
 import { selectActiveUser } from "../features/userSlice";
+import { InputFile } from "./InputFileCustom";
 import { ModalCustom } from "./ModalCustom";
 
 export const PostForm = () => {
@@ -12,8 +13,7 @@ export const PostForm = () => {
   const [modalVisible, setModalVisible] = useState(false);
   const [image, setImage] = useState([]);
 
-  const onSetImage = (e) => {
-    const file = e.target.files[0];
+  const onSetImage = (file) => {
     setImage(file);
   };
 
@@ -36,8 +36,8 @@ export const PostForm = () => {
     <ModalCustom visible={modalVisible}>
       <form>
         <label htmlFor="postTitle"> Оберіть фото:</label>
+        <InputFile onSetImage={onSetImage} />
 
-        <input type="file" accept="image/*" onChange={onSetImage} />
         <label htmlFor="postText">Текст посту:</label>
         <textarea
           id="postText"

@@ -1,7 +1,7 @@
 import React from "react";
 import Modal from "react-modal";
 Modal.defaultStyles.overlay.backgroundColor = "rgba(0, 0, 0, 0.78)";
-Modal.defaultStyles.overlay.overflow = "scroll";
+Modal.defaultStyles.overlay.overflowY = "scroll";
 
 export const ModalCustom = ({ children, visible }) => {
   const customStyles = {

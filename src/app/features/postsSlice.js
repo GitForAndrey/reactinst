@@ -111,7 +111,7 @@ export const postEdit = createAsyncThunk(
   async (data, { rejectWithValue, dispatch }) => {
     const { text, image, postId, oldImage } = data;
 
-    if (image == oldImage) {
+    if (image === oldImage) {
       console.log("same photo");
       try {
         const postRef = await doc(db, "posts", postId);
@@ -211,6 +211,7 @@ const postsSlice = createSlice({
 export const selectModalVisible = (state) => state.posts.postModalVisible;
 export const selectAllPosts = (state) => state.posts.posts;
 export const selectError = (state) => state.posts.error;
+export const selectLoading = (state) => state.posts.status;
 
 export const { setAllPosts, togglePostLike } = postsSlice.actions;
 export default postsSlice.reducer;

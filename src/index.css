@@ -20,18 +20,19 @@ textarea,
 button,
 select {
   font: inherit;
-  margin-bottom: 1em;
 }
 
-header {
+.header {
+  width: 100%;
   padding: 1rem;
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  background-color: purple;
+  background-color: #0099FF;
   color: whitesmoke;
   position: sticky;
   top: 0;
+  z-index: 15;
 }
 
 nav {
@@ -43,9 +44,11 @@ nav ul {
   list-style-type: none;
 }
 
-nav ul li {
+.link {
   display: inline-block;
   margin-right: 1rem;
+  cursor: pointer;
+  text-decoration: none;
 }
 
 nav a, nav a:visited {
@@ -197,4 +200,44 @@ right: 15px;
   padding-left: 5px;
   font-size: 1rem;
   line-height: 1rem;
+}
+/*login form*/
+.loginContainer {
+  display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height:450px;
+}
+.input_wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+}
+.formInput{
+  border: none;
+  border-bottom: 1px solid #0099FF;
+  padding: 8px 10px 8px 30px;
+  width: 300px;
+  
+}
+.formInput:focus{
+  border: none;
+  outline: none;
+  border-bottom: 1px solid #0099FF;
+}
+.formInput::placeholder{
+  color:#ccc;
+  font-size: 18px;
+}
+.inputIcon {
+  position: absolute;
+  z-index: 10;
+  color:#0099FF;
+}
+.regLink {
+  font-size: 14px;
+  text-align: center;
+  margin-top: 10px;
 }
