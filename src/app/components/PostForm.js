@@ -22,7 +22,14 @@ export const PostForm = () => {
 
   const onAddPost = () => {
     if (image && text) {
-      dispatch(addPost({ image, text, activeUser: activeUser.id }));
+      dispatch(
+        addPost({
+          image,
+          text,
+          authorId: activeUser.uid,
+          authorName: activeUser.userName,
+        })
+      );
       setText("");
       setModalVisible(false);
     }

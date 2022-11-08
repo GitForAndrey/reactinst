@@ -1,17 +1,20 @@
 import React, { useState } from "react";
-import { useDispatch } from "react-redux";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { postEdit } from "../features/postsSlice";
 import { InputFile } from "../components/InputFileCustom";
+import { selectActiveUser } from "../features/userSlice";
 
 export const PostEdit = () => {
+  const paramsNav = useParams();
+  const activeUser = useSelector(selectActiveUser);
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();
   const post = location.state;
   const [text, setText] = useState(post.text);
   const [image, setImage] = useState();
-
+  console.log(paramsNav);
   const onClickBack = () => {
     navigate(-1);
   };
@@ -28,13 +31,13 @@ export const PostEdit = () => {
         image: imageEdit,
         postId: post.id,
         oldImage: post.image,
+        activeUser: activeUser.uid,
       })
     );
     onClickBack();
   };
   return (
     <>
-      {console.log(location)}
       <form>
         <label htmlFor="postTitle"> Оберіть фото:</label>
 

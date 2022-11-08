@@ -1,52 +1,48 @@
 import React from "react";
-import { PostLike } from "./PostLike";
-import { PostTime } from "./PostTime";
+import { useNavigate, useParams } from "react-router-dom";
+import { PostLike } from "../components/PostLike";
+import { PostTime } from "../components/PostTime";
 import { useSelector, useDispatch } from "react-redux";
-import { useNavigate } from "react-router-dom";
-import { selectActiveUser, selectIsAuth } from "../features/userSlice";
 import { postLikeUpdate, togglePostLike } from "../features/postsSlice";
-import { toast } from "react-toastify";
+import { PostEditButtons } from "../components/PostEditButtons";
+import { selectActiveUser } from "../features/userSlice";
 
-export const PostItem = ({ post, fullText }) => {
-  const dispatch = useDispatch();
+export const Post = () => {
+  const { postId } = useParams();
   const navigate = useNavigate();
   const activeUser = useSelector(selectActiveUser);
-  const isAuth = useSelector(selectIsAuth);
+  const [post] = useSelector((state) => state.posts.posts).filter(
+    (post) => post.id === postId
+  );
+  const dispatch = useDispatch();
 
   const onToggleLike = (userId) => {
-    if (isAuth) {
-      dispatch(togglePostLike({ userId, postId: post.id }));
-      dispatch(postLikeUpdate({ postId: post.id }));
-    } else {
-      toast.error("Спочатку потрібно авторизуватись!");
-    }
+    dispatch(togglePostLike({ userId, postId: post.id }));
+    dispatch(postLikeUpdate({ postId: post.id }));
+  };
+  const onClickEdit = () => {
+    navigate(`/post/${post.id}/edit`, { state: post });
   };
 
-  const goToPost = () => {
-    if (isAuth) {
-      navigate(`/post/${post.id}`);
-    } else {
-      toast.error("Спочатку потрібно авторизуватись!");
-    }
-  };
-
-  const postText = fullText
-    ? post.text
-    : post.text.length < 100
-    ? post.text
-    : `${post.text.slice(0, 100)}...`;
-
+  const buttonContent = (
+    <PostEditButtons
+      activeUser={activeUser.uid}
+      post={post}
+      onClickEdit={onClickEdit}
+    />
+  );
   return (
-    <>
+    <div className="postContainer">
       <article
         style={{
+          width: "600px",
           display: "flex",
           flexDirection: "column",
           justifyContent: "space-between",
           cursor: "pointer",
         }}
       >
-        <div onClick={() => goToPost()}>
+        <div>
           <img
             className="postImage"
             src={post.image}
@@ -54,7 +50,7 @@ export const PostItem = ({ post, fullText }) => {
             height="100"
             alt="post content"
           />
-          <p style={{ wordWrap: "break-word" }}>{postText}</p>
+          <p style={{ wordWrap: "break-word" }}>{post.text}</p>
         </div>
 
         <div style={{ display: "flex", justifyContent: "space-between" }}>
@@ -65,12 +61,13 @@ export const PostItem = ({ post, fullText }) => {
           <div>
             <PostLike
               likes={post.likes}
-              userId={activeUser.uid}
+              userId={post.authorId}
               toggleLike={onToggleLike}
             />
           </div>
         </div>
+        {buttonContent}
       </article>
-    </>
+    </div>
   );
 };

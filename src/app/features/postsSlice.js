@@ -44,12 +44,12 @@ export const getPosts = createAsyncThunk(
 export const addPost = createAsyncThunk(
   "posts/postsSlice",
   async (data, { dispatch, rejectWithValue }) => {
-    const { image, text, activeUser } = data;
+    const { image, text, authorId, authorName } = data;
     try {
       const id = nanoid();
 
       //save selected image to firestore storage and get image URL
-      const storageRef = ref(storage, `/images/${id}`);
+      const storageRef = ref(storage, `/images/${authorId}/${id}`);
       const uploadTask = uploadBytesResumable(storageRef, image);
       uploadTask.on(
         "start storage",
@@ -63,7 +63,8 @@ export const addPost = createAsyncThunk(
           await addDoc(collection(db, "posts"), {
             image: url,
             text: text,
-            userId: activeUser,
+            authorName,
+            authorId,
             date: new Date().toISOString(),
             likes: [],
           });
@@ -109,7 +110,7 @@ export const deletePost = createAsyncThunk(
 export const postEdit = createAsyncThunk(
   "posts/postsSlice",
   async (data, { rejectWithValue, dispatch }) => {
-    const { text, image, postId, oldImage } = data;
+    const { text, image, postId, oldImage, activeUser } = data;
 
     if (image === oldImage) {
       console.log("same photo");
@@ -125,7 +126,7 @@ export const postEdit = createAsyncThunk(
     } else {
       try {
         const id = nanoid();
-        const storageRef = ref(storage, `/images/${id}`);
+        const storageRef = ref(storage, `/images/${activeUser}/${id}`);
         const uploadTask = uploadBytesResumable(storageRef, image);
         const storageRefDel = ref(storage, oldImage);
 
@@ -210,6 +211,10 @@ const postsSlice = createSlice({
 
 export const selectModalVisible = (state) => state.posts.postModalVisible;
 export const selectAllPosts = (state) => state.posts.posts;
+export const selectAuthorPosts = (state) =>
+  state.posts.posts.filter((post) => {
+    return post.authorId === state.users.activeUser.uid;
+  });
 export const selectError = (state) => state.posts.error;
 export const selectLoading = (state) => state.posts.status;
 

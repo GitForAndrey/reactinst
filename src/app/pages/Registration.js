@@ -1,13 +1,13 @@
 import React, { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { AiOutlineLock, AiOutlineMail } from "react-icons/ai";
+import { AiOutlineLock, AiOutlineMail, AiOutlineUser } from "react-icons/ai";
 import { FormInput } from "../ui_elements/FormInput";
-import { selectLoading, signInUser } from "../features/userSlice";
+import { createNewUser, selectLoading } from "../features/userSlice";
 import { Button } from "../ui_elements/Button";
 import { useNavigate } from "react-router-dom";
 import { Formik, ErrorMessage } from "formik";
 
-export const Login = ({ isAuth }) => {
+export const Registration = ({ isAuth }) => {
   let navigate = useNavigate();
 
   const dispatch = useDispatch();
@@ -21,15 +21,20 @@ export const Login = ({ isAuth }) => {
 
   return (
     <div className="loginContainer">
-      <h2>Вхід</h2>
+      <h2>Реєстрація</h2>
       <Formik
-        initialValues={{ email: "", password: "" }}
+        initialValues={{ email: "", password: "", username: "" }}
         validate={(values) => {
           const errors = {};
           if (!values.password) {
             errors.password = "Required";
           } else if (values.password.length < 6) {
             errors.password = "Must be 6 characters or more";
+          }
+          if (!values.username) {
+            errors.username = "Required";
+          } else if (values.username.length < 4) {
+            errors.username = "Must be 4 characters or more";
           }
           if (!values.email) {
             errors.email = "Required";
@@ -41,11 +46,38 @@ export const Login = ({ isAuth }) => {
           return errors;
         }}
         onSubmit={(values) => {
-          dispatch(signInUser(values));
+          console.log(values);
+          dispatch(createNewUser(values)).then((res) => {
+            if (res.type === "users/createNewUser/fulfilled") {
+              navigate("/login");
+            }
+          });
         }}
       >
-        {({ values, handleChange, handleBlur, handleSubmit, isSubmitting }) => (
+        {({
+          values,
+          errors,
+          touched,
+          handleChange,
+          handleBlur,
+          handleSubmit,
+          isSubmitting,
+        }) => (
           <form name="form">
+            <FormInput
+              handleChange={handleChange}
+              placeholder="Username"
+              name="username"
+              type="text"
+              value={values.username}
+              onBlur={handleBlur}
+            >
+              <AiOutlineUser className="inputIcon" />
+              <ErrorMessage
+                name="username"
+                render={(msg) => <div className="inputError">{msg}</div>}
+              />
+            </FormInput>
             <FormInput
               handleChange={handleChange}
               placeholder="Email"
@@ -77,13 +109,13 @@ export const Login = ({ isAuth }) => {
             </FormInput>
 
             <Button
-              title="Увійти"
+              title="Зареєструватись"
               loading={loadingStatus}
               disabled={isSubmitting}
               handleClick={handleSubmit}
             />
-            <div className="regLink" onClick={() => navigate("/registration")}>
-              Зареєструватись
+            <div className="regLink" onClick={() => navigate("/login")}>
+              Вхід
             </div>
           </form>
         )}

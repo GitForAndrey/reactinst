@@ -2,11 +2,15 @@ import React from "react";
 import { useSelector } from "react-redux";
 import { PostForm } from "../components/PostForm";
 import { PostItem } from "../components/PostItem";
-import { selectAllPosts, selectLoading } from "../features/postsSlice";
-import { Loading } from "../components/Loading";
+import {
+  selectAllPosts,
+  selectAuthorPosts,
+  selectLoading,
+} from "../features/postsSlice";
+import { Loading } from "../ui_elements/Loading";
 
 export const AuthorAllPosts = () => {
-  const posts = useSelector(selectAllPosts);
+  const posts = useSelector(selectAuthorPosts);
   const loadingStatus = useSelector(selectLoading);
 
   const sortedData = posts

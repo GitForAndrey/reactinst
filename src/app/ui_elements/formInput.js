@@ -1,22 +1,25 @@
-import React, { useState } from "react";
+import React from "react";
 
-export const FormInput = ({ children, placeholder, handleChange, type }) => {
-  const [value, setValue] = useState("");
-  const returnChange = (item) => {
-    setValue(item.value);
-    handleChange(item.value, item.name);
-  };
-
+export const FormInput = ({
+  children,
+  placeholder,
+  handleChange,
+  onBlur,
+  type,
+  value,
+  name,
+}) => {
   return (
     <div className="input_wrap">
       {children}
       <input
         className="formInput"
         type={type}
-        name={placeholder}
+        name={name}
         value={value}
+        onBlur={onBlur}
         placeholder={placeholder}
-        onChange={(e) => returnChange(e.target)}
+        onChange={handleChange}
       />
     </div>
   );
